@@ -29,28 +29,42 @@ def webhook():
     return r
 
 
+
 def processRequest(req):
-    if req.get("result").get("action") != "yahooWeatherForecast":
+    result = req.get("result")
+    if result is None:
+        return None
+
+    action = result.get("action")
+    if action == "exit":
+        return processExitRequest(result)
+    elif action == "yahooWeatherForecast":
+        return processWeatherRequest(result)
+    else:
         return {}
-    yql_query = makeYqlQuery(req)
+
+def processExitRequest(result):
+    return {
+        "speech": "Say-o-nara",
+        "displayText": "Say o nara"
+    }
+
+
+def processWeatherRequest(result):
+    yql_query = makeYqlQuery(result)
     if yql_query is None:
         return {}
     baseurl = "https://query.yahooapis.com/v1/public/yql?"
     yql_url = baseurl + urllib.parse.urlencode({'q': yql_query}) + "&format=json"
-
     result = urllib.request.urlopen(yql_url).read()
     print("Got yql result: ")
     print(result)
-
     data = json.loads(result.decode("utf-8"))
     res = makeWebhookResult(data)
     return res
 
 
-def makeYqlQuery(req):
-    result = req.get("result")
-    if result is None:
-        return None
+def makeYqlQuery(result):
     parameters = result.get("parameters")
     if parameters is None:
         return None
