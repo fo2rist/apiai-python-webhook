@@ -31,9 +31,9 @@ def webhook():
 
 
 def processRequest(req):
-    result = req.get("result")
+    result = req.get("result") if req else None
     if result is None:
-        return None
+        return {}
 
     action = result.get("action")
     if action == "exit":
@@ -44,9 +44,12 @@ def processRequest(req):
         return {}
 
 def processExitRequest(result):
+    fulfilment = result.get("fulfillment")
+    speech = fulfilment.get("speech") if fulfilment else None
+    answer = speech if speech else "Bye bye!"
     return {
-        "speech": "Say-o-nara",
-        "displayText": "Say o nara"
+        "speech": answer,
+        "displayText": answer
     }
 
 
@@ -66,9 +69,7 @@ def processWeatherRequest(result):
 
 def makeYqlQuery(result):
     parameters = result.get("parameters")
-    if parameters is None:
-        return None
-    city = parameters.get("geo-city")
+    city = parameters.get("geo-city") if parameters else None
     if city is None:
         return None
 
