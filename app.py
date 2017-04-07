@@ -1,6 +1,7 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
-import urllib
+import urllib.parse
+import urllib.request
 import json
 import os
 
@@ -16,7 +17,7 @@ app = Flask(__name__)
 def webhook():
     req = request.get_json(silent=True, force=True)
 
-    print("Request:")
+    print("Got Request:")
     print(json.dumps(req, indent=4))
 
     res = processRequest(req)
@@ -35,14 +36,13 @@ def processRequest(req):
     yql_query = makeYqlQuery(req)
     if yql_query is None:
         return {}
-    yql_url = baseurl + urllib.urlencode({'q': yql_query}) + "&format=json"
-    print(yql_url)
+    yql_url = baseurl + urllib.parse.urlencode({'q': yql_query}) + "&format=json"
 
-    result = urllib.urlopen(yql_url).read()
-    print("yql result: ")
+    result = urllib.request.urlopen(yql_url).read()
+    print("Got yql result: ")
     print(result)
 
-    data = json.loads(result)
+    data = json.loads(result.decode("utf-8"))
     res = makeWebhookResult(data)
     return res
 
@@ -158,7 +158,7 @@ def makeWebhookResult(data):
         }
     }
 
-    print(json.dumps(slack_message))
+    #print(json.dumps(slack_message))
 
     return {
         "speech": speech,
